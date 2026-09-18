@@ -118,8 +118,10 @@ def shell(cmd, cwd=None):
 def host_name():
     return os.uname().nodename.split(".")[0]
 
+
 def opencl_args():
     return os.environ.get("OPENCL_ARGS", "-p 0 -d 0 -t 1 --").strip()
+
 
 def make_vars(backend, compiler):
     top = REPO_ROOT
@@ -244,7 +246,9 @@ def get_app_dir(app, backend):
 
     if backend not in APP_PATHS[name]:
         valid = ", ".join(sorted(APP_PATHS[name]))
-        raise SystemExit(f"No backend '{backend}' for application '{name}'. Valid: {valid}")
+        raise SystemExit(
+            f"No backend '{backend}' for application '{name}'. Valid: {valid}"
+        )
 
     path = REPO_ROOT / APP_PATHS[name][backend]
 
@@ -297,28 +301,36 @@ def run_binary(app_dir, app, backend, compiler, final_args, lsb_name):
     if final_args:
         env_cmd += " " + final_args
 
-    if backend == "cuda" and compiler.startswith("scale-"):
-        scale_root = os.environ.get("SCALE_ROOT", str(REPO_ROOT / "scale-1.7.1-Linux"))
-
-        if compiler == "scale-amd":
-            target = os.environ.get("HIP_ARCH", os.environ.get("HIP_DEV_TARGET", "gfx942"))
-        else:
-            cuda_arch = os.environ.get("CUDA_ARCH", os.environ.get("CUDA_DEV_TARGET", "sm_70").removeprefix("sm_"))
-            target = f"sm_{cuda_arch}"
-
-        env_cmd = f"source {shlex.quote(scale_root + '/bin/scaleenv')} {shlex.quote(target)} && " + env_cmd
+    if (
+        backend == "cuda"
+        and compiler.startswith("scale-")
+        and "SCALE_ENV" not in os.environ
+    ):
+        raise Exception("Must be in scaleenv to use scale compiler")
 
     shell(["bash", "-c", env_cmd], cwd=results)
-
-
 
 
 # Full application list for APP=all sweeps. Names match the Python
 # variable names defined in opendwarf_application_parameters.py (not the
 # APP_PATHS dict keys), matching runner.sh's APP_LIST ordering.
 ALL_APPS = [
-    "nqueens", "crc", "lud", "nw", "swat", "tdm", "hmm", "bfs",
-    "kmeans", "gem", "csr", "srad", "cfd", "dwt", "fft", "cwt",
+    "nqueens",
+    "crc",
+    "lud",
+    "nw",
+    "swat",
+    "tdm",
+    "hmm",
+    "bfs",
+    "kmeans",
+    "gem",
+    "csr",
+    "srad",
+    "cfd",
+    "dwt",
+    "fft",
+    "cwt",
 ]
 
 
@@ -346,7 +358,9 @@ def run(args):
         app_dir = get_app_dir(app, args.backend)
 
         if args.size not in app:
-            valid = [k for k in ("tiny", "small", "medium", "large", "default") if k in app]
+            valid = [
+                k for k in ("tiny", "small", "medium", "large", "default") if k in app
+            ]
             msg = (
                 f"Application '{app_name}' has no size '{args.size}'. "
                 f"Available sizes: {', '.join(valid)}"
