@@ -103,7 +103,6 @@ $(BUILD_DIR)/scale-rmse.o: ../rmse.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) -c $< -o $@
 
 $(BUILD_DIR)/scale-kmeans_cuda.o: kmeans.cu | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -111,7 +110,6 @@ $(BUILD_DIR)/scale-kmeans_cuda.o: kmeans.cu | $(BUILD_DIR)
 		-c $< -o $@
 
 $(BUILD_DIR)/scale-kmeans_cuda_kernel.o: kmeans_cuda_kernel.cu | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -119,7 +117,6 @@ $(BUILD_DIR)/scale-kmeans_cuda_kernel.o: kmeans_cuda_kernel.cu | $(BUILD_DIR)
 		-c $< -o $@
 
 kmeans-cuda-scale-nvidia: $(SCALE_COMMON_C_OBJS) $(SCALE_CUDA_OBJS)
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -128,19 +125,16 @@ kmeans-cuda-scale-nvidia: $(SCALE_COMMON_C_OBJS) $(SCALE_CUDA_OBJS)
 		$(LDFLAGS) $(LDLIBS) -lm
 
 $(BUILD_DIR)/scale-amd-kmeans_cuda.o: kmeans.cu | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) $(CPPFLAGS) $(INCLUDES) \
 		-c $< -o $@
 
 $(BUILD_DIR)/scale-amd-kmeans_cuda_kernel.o: kmeans_cuda_kernel.cu | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) $(CPPFLAGS) $(INCLUDES) \
 		-c $< -o $@
 
 kmeans-cuda-scale-amd: $(SCALE_COMMON_C_OBJS) $(BUILD_DIR)/scale-amd-kmeans_cuda.o $(BUILD_DIR)/scale-amd-kmeans_cuda_kernel.o
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) \
 		-o $@ $^ \
@@ -154,13 +148,13 @@ run-kmeans-cuda-nvcc:
 run-kmeans-cuda-scale-nvidia:
 	@if [[ ! -x "$(CURDIR)/kmeans-cuda-scale-nvidia" ]]; then $(MAKE) kmeans-cuda-scale-nvidia; fi
 	@mkdir -p "$(TOP_LEVEL)/results"
-	@cd "$(TOP_LEVEL)/results" && source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
+	@cd "$(TOP_LEVEL)/results" &&  \
 	$(RUN_ENV) "$(CURDIR)/kmeans-cuda-scale-nvidia" $(ARGS) $(N)
 
 run-kmeans-cuda-scale-amd:
 	@if [[ ! -x "$(CURDIR)/kmeans-cuda-scale-amd" ]]; then $(MAKE) kmeans-cuda-scale-amd; fi
 	@mkdir -p "$(TOP_LEVEL)/results"
-	@cd "$(TOP_LEVEL)/results" && source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
+	@cd "$(TOP_LEVEL)/results" &&  \
 	$(RUN_ENV) "$(CURDIR)/kmeans-cuda-scale-amd" $(ARGS) $(N)
 
 clean:

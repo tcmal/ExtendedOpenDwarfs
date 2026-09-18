@@ -10,8 +10,6 @@ NVIDIA_NVCC ?= $(shell command -v nvcc 2>/dev/null || echo $(NVCC))
 CUDA_NVCC ?= $(NVIDIA_NVCC)
 CUDA_PATH ?=
 
-SCALE_ROOT ?= $(TOP_LEVEL)/scale-1.7.0-Linux
-
 CUDA_DEV_TARGET ?= sm_70
 CUDA_ARCH ?= $(patsubst sm_%,%,$(CUDA_DEV_TARGET))
 HIP_ARCH ?= gfx942
@@ -98,7 +96,6 @@ needle-cuda-nvcc: $(NVCC_OBJ)
 		-lm
 
 needle-cuda-scale-nvidia: needle_cuda.cu needle_kernel.cu needle_kernel_opt_gpu.cu
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -112,7 +109,6 @@ needle-cuda-scale-nvidia: needle_cuda.cu needle_kernel.cu needle_kernel_opt_gpu.
 		-lm
 
 needle-cuda-scale-amd: needle_cuda.cu needle_kernel.cu needle_kernel_opt_gpu.cu
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) \
 		$(CPPFLAGS) \
@@ -137,7 +133,6 @@ run-needle-cuda-scale-nvidia:
 	fi
 	@mkdir -p "$(TOP_LEVEL)/results"
 	@cd "$(TOP_LEVEL)/results" && \
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	$(RUN_ENV) "$(CURDIR)/needle-cuda-scale-nvidia" $(ARGS) $(N)
 
 run-needle-cuda-scale-amd:
@@ -146,7 +141,6 @@ run-needle-cuda-scale-amd:
 	fi
 	@mkdir -p "$(TOP_LEVEL)/results"
 	@cd "$(TOP_LEVEL)/results" && \
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	$(RUN_ENV) "$(CURDIR)/needle-cuda-scale-amd" $(ARGS) $(N)
 
 clean:

@@ -38,7 +38,6 @@ $(TARGET_NVCC): $(CUDA_OBJS)
 	$(CUDA_NVCC) $(NVCCFLAGS) -arch=sm_$(CUDA_ARCH) -o $@ $^ $(LDFLAGS) $(LDLIBS) -lm
 
 $(BUILD_DIR)/scale-nvidia-dwt2d.o: dwt2d.cu dwt2d_kernel.cuh | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -46,13 +45,11 @@ $(BUILD_DIR)/scale-nvidia-dwt2d.o: dwt2d.cu dwt2d_kernel.cuh | $(BUILD_DIR)
 		-c $< -o $@
 
 $(BUILD_DIR)/scale-amd-dwt2d.o: dwt2d.cu dwt2d_kernel.cuh | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) $(COMMON_CPPFLAGS) \
 		-c $< -o $@
 
 $(TARGET_SCALE_NVIDIA): $(SCALE_NVIDIA_CUDA_OBJS)
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -61,7 +58,6 @@ $(TARGET_SCALE_NVIDIA): $(SCALE_NVIDIA_CUDA_OBJS)
 		$(LDFLAGS) $(LDLIBS) -lm
 
 $(TARGET_SCALE_AMD): $(SCALE_AMD_CUDA_OBJS)
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) \
 		-o $@ $^ \
@@ -75,12 +71,12 @@ run-$(TARGET_NVCC): $(TARGET_NVCC)
 
 run-$(TARGET_SCALE_NVIDIA): $(TARGET_SCALE_NVIDIA)
 	mkdir -p $(TOP_LEVEL)/results
-	cd $(TOP_LEVEL)/results && source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
+	cd $(TOP_LEVEL)/results &&  \
 	$(RUN_ENV) $(CURDIR)/$(TARGET_SCALE_NVIDIA) $(ARGS) $(N)
 
 run-$(TARGET_SCALE_AMD): $(TARGET_SCALE_AMD)
 	mkdir -p $(TOP_LEVEL)/results
-	cd $(TOP_LEVEL)/results && source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
+	cd $(TOP_LEVEL)/results &&  \
 	$(RUN_ENV) $(CURDIR)/$(TARGET_SCALE_AMD) $(ARGS) $(N)
 
 clean:

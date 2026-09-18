@@ -48,7 +48,6 @@ $(TARGET_NVCC): $(CUDA_OBJ)
 		-lm
 
 $(TARGET_SCALE_NVIDIA): fft.cu
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
 		$(NVCCFLAGS) \
@@ -79,7 +78,6 @@ run-$(TARGET_NVCC): $(TARGET_NVCC)
 run-$(TARGET_SCALE_NVIDIA): $(TARGET_SCALE_NVIDIA)
 	mkdir -p "$(TOP_LEVEL)/results"
 	cd "$(TOP_LEVEL)/results" && \
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	$(RUN_ENV) "$(CURDIR)/$(TARGET_SCALE_NVIDIA)" $(ARGS) $(N)
 
 run-$(TARGET_SCALE_AMD): $(TARGET_SCALE_AMD)

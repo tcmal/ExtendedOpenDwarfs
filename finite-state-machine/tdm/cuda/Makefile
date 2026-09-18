@@ -10,8 +10,6 @@ NVIDIA_NVCC ?= $(shell command -v nvcc 2>/dev/null || echo $(NVCC))
 CUDA_NVCC ?= $(NVIDIA_NVCC)
 CUDA_PATH ?=
 
-SCALE_ROOT ?= $(TOP_LEVEL)/scale-1.7.0-Linux
-
 CUDA_DEV_TARGET ?= sm_70
 CUDA_ARCH ?= $(patsubst sm_%,%,$(CUDA_DEV_TARGET))
 HIP_ARCH ?= gfx942
@@ -99,7 +97,6 @@ tdm-cuda-nvcc: $(OBJ)
 		-lm
 
 tdm-cuda-scale-nvidia: tdm_cuda.cu tdm_cuda_kernel.cu ../dataio.cpp
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -113,7 +110,6 @@ tdm-cuda-scale-nvidia: tdm_cuda.cu tdm_cuda_kernel.cu ../dataio.cpp
 		-lm
 
 tdm-cuda-scale-amd: tdm_cuda.cu tdm_cuda_kernel.cu ../dataio.cpp
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) \
 		$(CPPFLAGS) \
@@ -138,7 +134,6 @@ run-tdm-cuda-scale-nvidia:
 	fi
 	@mkdir -p "$(TOP_LEVEL)/results"
 	@cd "$(TOP_LEVEL)/results" && \
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	$(RUN_ENV) "$(CURDIR)/tdm-cuda-scale-nvidia" $(ARGS) $(N)
 
 run-tdm-cuda-scale-amd:
@@ -147,7 +142,6 @@ run-tdm-cuda-scale-amd:
 	fi
 	@mkdir -p "$(TOP_LEVEL)/results"
 	@cd "$(TOP_LEVEL)/results" && \
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	$(RUN_ENV) "$(CURDIR)/tdm-cuda-scale-amd" $(ARGS) $(N)
 
 clean:

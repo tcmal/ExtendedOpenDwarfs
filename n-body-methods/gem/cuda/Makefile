@@ -98,7 +98,6 @@ $(BUILD_DIR)/scale-%.o: ../%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(COMMON_CPPFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/scale-nvidia-calculate_potential.o: calculate_potential.cu | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -106,13 +105,11 @@ $(BUILD_DIR)/scale-nvidia-calculate_potential.o: calculate_potential.cu | $(BUIL
 		-c $< -o $@
 
 $(BUILD_DIR)/scale-amd-calculate_potential.o: calculate_potential.cu | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) $(CUDA_CPPFLAGS) \
 		-c $< -o $@
 
 $(TARGET_SCALE_NVIDIA): $(SCALE_COMMON_C_OBJS) $(SCALE_COMMON_CXX_OBJS) $(SCALE_NVIDIA_CUDA_OBJS)
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -121,7 +118,6 @@ $(TARGET_SCALE_NVIDIA): $(SCALE_COMMON_C_OBJS) $(SCALE_COMMON_CXX_OBJS) $(SCALE_
 		$(LDFLAGS) $(LDLIBS) -lm
 
 $(TARGET_SCALE_AMD): $(SCALE_COMMON_C_OBJS) $(SCALE_COMMON_CXX_OBJS) $(SCALE_AMD_CUDA_OBJS)
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) \
 		-o $@ $^ \
@@ -135,12 +131,12 @@ run-$(TARGET_NVCC): $(TARGET_NVCC)
 
 run-$(TARGET_SCALE_NVIDIA): $(TARGET_SCALE_NVIDIA)
 	mkdir -p $(TOP_LEVEL)/results
-	cd $(TOP_LEVEL)/results && source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
+	cd $(TOP_LEVEL)/results &&  \
 	$(RUN_ENV) $(CURDIR)/$(TARGET_SCALE_NVIDIA) $(ARGS) $(N)
 
 run-$(TARGET_SCALE_AMD): $(TARGET_SCALE_AMD)
 	mkdir -p $(TOP_LEVEL)/results
-	cd $(TOP_LEVEL)/results && source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
+	cd $(TOP_LEVEL)/results &&  \
 	$(RUN_ENV) $(CURDIR)/$(TARGET_SCALE_AMD) $(ARGS) $(N)
 
 clean:

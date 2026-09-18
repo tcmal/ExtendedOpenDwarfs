@@ -86,7 +86,6 @@ $(BUILD_DIR)/scale-opts.o: $(OCD_OPTS_SRC) | $(BUILD_DIR)
 
 
 $(BUILD_DIR)/scale-nvidia-csr.o: csr.cu | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -94,13 +93,11 @@ $(BUILD_DIR)/scale-nvidia-csr.o: csr.cu | $(BUILD_DIR)
 		-c $< -o $@
 
 $(BUILD_DIR)/scale-amd-csr.o: csr.cu | $(BUILD_DIR)
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) $(COMMON_CPPFLAGS) \
 		-c $< -o $@
 
 $(TARGET_SCALE_NVIDIA): $(SCALE_COMMON_C_OBJS) $(SCALE_NVIDIA_CUDA_OBJS)
-	source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
 	nvcc \
 		$(if $(CUDA_PATH),--cuda-path="$(CUDA_PATH)") \
 		-gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
@@ -109,7 +106,6 @@ $(TARGET_SCALE_NVIDIA): $(SCALE_COMMON_C_OBJS) $(SCALE_NVIDIA_CUDA_OBJS)
 		$(LDFLAGS) -Xlinker --gc-sections $(LDLIBS) -lm
 
 $(TARGET_SCALE_AMD): $(SCALE_COMMON_C_OBJS) $(SCALE_AMD_CUDA_OBJS)
-	source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
 	nvcc \
 		$(NVCCFLAGS) \
 		-o $@ $^ \
@@ -129,7 +125,7 @@ run-$(TARGET_SCALE_NVIDIA):
 		$(MAKE) $(TARGET_SCALE_NVIDIA); \
 	fi
 	mkdir -p $(TOP_LEVEL)/results
-	cd $(TOP_LEVEL)/results && source "$(SCALE_ROOT)/bin/scaleenv" sm_$(CUDA_ARCH) && \
+	cd $(TOP_LEVEL)/results &&  \
 	$(RUN_ENV) $(CURDIR)/$(TARGET_SCALE_NVIDIA) $(ARGS) $(N)
 
 run-$(TARGET_SCALE_AMD):
@@ -137,7 +133,7 @@ run-$(TARGET_SCALE_AMD):
 		$(MAKE) $(TARGET_SCALE_AMD); \
 	fi
 	mkdir -p $(TOP_LEVEL)/results
-	cd $(TOP_LEVEL)/results && source "$(SCALE_ROOT)/bin/scaleenv" $(HIP_ARCH) && \
+	cd $(TOP_LEVEL)/results &&  \
 	$(RUN_ENV) $(CURDIR)/$(TARGET_SCALE_AMD) $(ARGS) $(N)
 
 clean:
